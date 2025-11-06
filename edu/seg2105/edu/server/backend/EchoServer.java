@@ -4,6 +4,8 @@ package edu.seg2105.edu.server.backend;
 // license found at www.lloseng.com 
 
 
+import java.io.IOException;
+
 import ocsf.server.*;
 
 /**
@@ -18,13 +20,11 @@ import ocsf.server.*;
 public class EchoServer extends AbstractServer 
 {
   //Class variables *************************************************
-  
+  String loginKey = "loginID";
   /**
    * The default port to listen on.
    */
   final public static int DEFAULT_PORT = 5555;
-  
-  private String serverStatus; //status of server
   
   //Constructors ****************************************************
   
@@ -50,8 +50,28 @@ public class EchoServer extends AbstractServer
   public void handleMessageFromClient
     (Object msg, ConnectionToClient client)
   {
-    System.out.println("Message received: " + msg + " from " + client);
-    this.sendToAllClients(msg);
+	String msgStr = (String) msg;
+	String sendMsg;
+	System.out.println("Message received: " + msg + " from " + client.getInfo(loginKey) + ".");
+
+	if ((msgStr).startsWith("#login")){
+		if (client.getInfo(loginKey) == null) {
+			String loginIDStr = msgStr.replace("#login ", ""); 
+			client.setInfo(loginKey, loginIDStr);
+			sendMsg = (client.getInfo(loginKey) + " has logged on.");
+			System.out.println(sendMsg);
+			this.sendToAllClients(sendMsg);
+		} else {
+			try {
+				client.close();
+			} catch (IOException e) {}
+		}
+	} else {
+    
+	sendMsg = client.getInfo(loginKey) + "> " + msgStr;
+		
+    this.sendToAllClients(sendMsg);
+	}
   }
     
   /**
@@ -76,16 +96,16 @@ public class EchoServer extends AbstractServer
   
   @Override
   protected void clientConnected(ConnectionToClient client) {
-	  System.out.println("Client Connected");
+	  System.out.println("A new client has connected to the server.");
   }
   	@Override
 	synchronized protected void clientDisconnected(ConnectionToClient client) {
-  		System.out.println("Client Disconnected");
+  		System.out.println(client.getInfo(loginKey) + " has disconnected.");
   		super.clientDisconnected(client);
 	}
   	@Override
   	synchronized protected void clientException(ConnectionToClient client, Throwable exception) {
-  		System.out.println("Client Disconnected");
+  		System.out.println(client.getInfo(loginKey) + " has disconnected.");
   	}
   
   	

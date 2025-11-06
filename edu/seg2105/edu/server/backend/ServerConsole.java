@@ -35,16 +35,14 @@ public class ServerConsole implements ChatIF{
 		if(message.startsWith("#")) { //call if command is prompted, but don't send command to clients because that would be stupid
 			handleServerCommands(message);
 		} else { //If it's not a command then it is a message for all clients
-		System.out.println("SERVER MSG> "  + message);
-		sv.sendToAllClients("SERVER MSG> "  + message);
+		System.out.println("SERVER MESSAGE> "  + message);
+		sv.sendToAllClients("SERVER MESSAGE> "  + message);
 		}
 	}
 	
 	public void handleServerCommands(String command) {
 		 if(command.equals("#quit")) {
-			  try {
-				sv.close();
-			  } catch (IOException e) {}
+			 System.exit(0); //I hope this is graceful enough
 		  } 
 		  
 		  else if (command.equals("#stop")) {
